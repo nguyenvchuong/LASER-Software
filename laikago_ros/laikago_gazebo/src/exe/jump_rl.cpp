@@ -337,10 +337,10 @@ int main(int argc, char **argv)
     int jump_traj_idx = 0;
     
     bool spawn_cubes = true;
-    bool front_cube = false;
+    bool front_cube = true;
     bool rear_cube = false;
-    float rear_cube_height = 0.05;
-    float front_cube_height = 0.05; // 0.05
+    float rear_cube_height = 0.04;
+    float front_cube_height = 0.04; // 0.05
     // float rear_cube_height = 0.08;
     // float front_cube_height = 0.01;
 
@@ -530,10 +530,10 @@ int main(int argc, char **argv)
     init_final[12]=0; init_final[13]=0;
     
     if (front_cube){
-        init_final[12]=0.05; // front box height
+        init_final[12]=front_cube_height; // front box height
     }
     if (rear_cube){
-        init_final[13]=0.05; // rear box height
+        init_final[13]=rear_cube_height; // rear box height
     }
 
 

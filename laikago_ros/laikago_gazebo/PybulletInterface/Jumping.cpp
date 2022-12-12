@@ -1260,22 +1260,22 @@ void JumpingObj::computeFullTorquesAndSend_constraints()
 
 
     
-    // limit torque --> limit current run through motor (Unitree specs)
+    // // limit torque --> limit current run through motor (Unitree specs)
 
-    for (int i = 0; i < 4; i++){
-        for (int j = 0; j < 3; j++)
-        {
-            if (_controlData->_legController->commands[i].tau[j] >= _joint_torque_max)
-            {
-                _controlData->_legController->commands[i].tau[j] = _joint_torque_max;
-            }
+    // for (int i = 0; i < 4; i++){
+    //     for (int j = 0; j < 3; j++)
+    //     {
+    //         if (_controlData->_legController->commands[i].tau[j] >= _joint_torque_max)
+    //         {
+    //             _controlData->_legController->commands[i].tau[j] = _joint_torque_max;
+    //         }
 
-            if (_controlData->_legController->commands[i].tau[j] <= -_joint_torque_max)
-            {
-                _controlData->_legController->commands[i].tau[j] = -_joint_torque_max;
-            }
-        }
-    }
+    //         if (_controlData->_legController->commands[i].tau[j] <= -_joint_torque_max)
+    //         {
+    //             _controlData->_legController->commands[i].tau[j] = -_joint_torque_max;
+    //         }
+    //     }
+    // }
 
 
     for (int i = 0; i < 4; i++)
