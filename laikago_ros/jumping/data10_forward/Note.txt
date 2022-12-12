@@ -1,0 +1,5 @@
+this data9 increase alpha_tau to 0.05 in optimization --> help prevent torque saturation.
+fix voltage equation, voltage+ upper power constraints
+
+data10: add all constraints except upper power limits
+.6&0.7 use voltage+current constraints only, no power constraints-> need to fix

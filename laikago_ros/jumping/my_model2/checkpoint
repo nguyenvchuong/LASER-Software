@@ -1,0 +1,2 @@
+model_checkpoint_path: "/home/guillaume/catkin_ws/src/USC-AlienGo-Software/laikago_ros/jumping/my_model2/model"
+all_model_checkpoint_paths: "/home/guillaume/catkin_ws/src/USC-AlienGo-Software/laikago_ros/jumping/my_model2/model"

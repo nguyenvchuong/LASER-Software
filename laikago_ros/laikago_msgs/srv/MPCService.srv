@@ -1,0 +1,3 @@
+PybulletFullState pybState # full state form Pybullet, including possible leg commsnds
+---
+LegCmdArray legCmdArray	# impedance control leg commands back from MPC
