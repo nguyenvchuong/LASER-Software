@@ -339,8 +339,8 @@ int main(int argc, char **argv)
     bool spawn_cubes = true;
     bool front_cube = true;
     bool rear_cube = false;
-    float rear_cube_height = 0.04;
-    float front_cube_height = 0.04; // 0.05
+    float rear_cube_height = 0.05;
+    float front_cube_height = 0.05; // 0.05
     // float rear_cube_height = 0.08;
     // float front_cube_height = 0.01;
 
@@ -371,7 +371,7 @@ int main(int argc, char **argv)
     if (front_cube){
         // dimensions
         float dim_x = 0.12;
-        float dim_y = 0.5;
+        float dim_y = 1;
         float dim_z = front_cube_height; // change this 
         // location 
         float x=0.15;
@@ -388,7 +388,7 @@ int main(int argc, char **argv)
     if (rear_cube){
         // dimensions
         float dim_x = 0.3;
-        float dim_y = 0.5;
+        float dim_y = 1;
         float dim_z = rear_cube_height; // change this 
         // location 
         float x=-0.15;

@@ -45,13 +45,13 @@ JumpingObj::JumpingObj() :
     setupTensorflow();
     loadRLSpaceParams();
 
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 10; i++)
     {
         sensory_obs.push_back(vector<float>(28));
     }
-    obs_rms_mean.resize(5 * 28);
-    obs_rms_var.resize(5 * 28);
-    obs_high.resize(5 * 28);
+    obs_rms_mean.resize(10 * 28);
+    obs_rms_var.resize(10 * 28);
+    obs_high.resize(10 * 28);
 
     // mytime.start();
 }
@@ -184,9 +184,9 @@ void JumpingObj::landing()
     double Kd_l = 1;
 
     // set desired joint position and velocity
-    _controlData->_legController->commands[0].qDes << 0, 1.2566 - 0.4 * 0, -2.355; // front right leg
+    _controlData->_legController->commands[0].qDes << 0, 1.2566 - 0.5, -2.355; // front right leg
     _controlData->_legController->commands[1].qDes << _controlData->_legController->commands[0].qDes;
-    _controlData->_legController->commands[2].qDes << 0, 1.2566 - 0.4 * 0, -2.355; // rear right leg
+    _controlData->_legController->commands[2].qDes << 0, 1.2566 - 0.5, -2.355; // rear right leg
     _controlData->_legController->commands[3].qDes << _controlData->_legController->commands[2].qDes;
 
     _controlData->_legController->commands[0].qdDes << 0, 0, 0; // front right leg
@@ -1210,42 +1210,42 @@ void JumpingObj::computeFullTorquesAndSend_constraints()
 
     }
 
-    // // Limit upper power
+    // Limit upper power
 
-    // for (int i =0; i<4; i++){
+    for (int i =0; i<4; i++){
 
-    //     for (int j = 0; j < 3; j++)
-    //     {
-    //         voltage[i * 3 + j] = _controlData->_legController->commands[i].tau(j) * _R_motor / (Kt * _gear_ratio) + _controlData->_legController->data[i].qd[j] * _gear_ratio * Kt;
-    //         current[i * 3 + j] = _controlData->_legController->commands[i].tau(j)/ (Kt * _gear_ratio);
-    //         total_power += voltage[i * 3 +j] * current[i *3 +j];
-    //     }
-    // }
+        for (int j = 0; j < 3; j++)
+        {
+            voltage[i * 3 + j] = _controlData->_legController->commands[i].tau(j) * _R_motor / (Kt * _gear_ratio) + _controlData->_legController->data[i].qd[j] * _gear_ratio * Kt;
+            current[i * 3 + j] = _controlData->_legController->commands[i].tau(j)/ (Kt * _gear_ratio);
+            total_power += voltage[i * 3 +j] * current[i *3 +j];
+        }
+    }
 
-    // double A = 0; double B =0;
+    double A = 0; double B =0;
 
-    // if (total_power > _voltage_max * _current_max){
+    if (total_power > _voltage_max * _current_max){
       
 
-    //   for (int i =0 ; i<4; i++){
+      for (int i =0 ; i<4; i++){
 
-    //     for (int j=0; j<3; j++){
-    //        A += _R_motor * pow( _controlData->_legController->commands[i].tau(j)/(_gear_ratio*Kt), 2);
-    //        B += _controlData->_legController->data[i].qd(j)*_controlData->_legController->commands[i].tau(j);
-    //     }
-    //   }
+        for (int j=0; j<3; j++){
+           A += _R_motor * pow( _controlData->_legController->commands[i].tau(j)/(_gear_ratio*Kt), 2);
+           B += _controlData->_legController->data[i].qd(j)*_controlData->_legController->commands[i].tau(j);
+        }
+      }
       
-    //   // We want A*k^2+B*k = P_max
-    //   double k = (-B + sqrt(pow(B, 2)+ 4 * A *_voltage_max * _current_max))/(2*A);
+      // We want A*k^2+B*k = P_max
+      double k = (-B + sqrt(pow(B, 2)+ 4 * A *_voltage_max * _current_max))/(2*A);
 
-    //   for (int i = 0; i < 4; i++){
-    //         for (int j = 0; j < 3; j++)
-    //         {
-    //             _controlData->_legController->commands[i].tau[j] = _controlData->_legController->commands[i].tau[j] * k;
-    //         }
-    //   }
+      for (int i = 0; i < 4; i++){
+            for (int j = 0; j < 3; j++)
+            {
+                _controlData->_legController->commands[i].tau[j] = _controlData->_legController->commands[i].tau[j] * k;
+            }
+      }
 
-    // }
+    }
 
     // // Limit lower power >=0, don't want recharge back to battery
     // if (B <0){
@@ -1620,7 +1620,7 @@ void JumpingObj::computeAction_2D(int Iter, std::vector<double> init_final, std:
     // normalizeObservation(obs);
     std::cout << "checking obs len... " << std::endl;
     // cout<< "obs_length=" << obs_len << endl;
-    for (int i = 0; i < 140; i++)
+    for (int i = 0; i < 280; i++)
     {
         cout << i << " " << obs[i] << endl;
     }

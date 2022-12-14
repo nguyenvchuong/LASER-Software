@@ -150,7 +150,7 @@ public:
     // landing:
     bool runQP = false;
 
-    int obs_len = 140;  // (28)*5 --> 2D
+    int obs_len = 280;  // (28)*5 --> 2D
     double act_arr[4]; 
     int act_len = 4; //16
     double last_action_rl[4] = {0,0,0,0};
@@ -210,7 +210,7 @@ private:
 
     //2D
     // std::string tf_root = "src/LASER-Software/laikago_ros/jumping/112722214809/";
-    std::string tf_root = "src/LASER-Software/laikago_ros/jumping/112922190931/";
+    std::string tf_root = "src/LASER-Software/laikago_ros/jumping/120122185909/";
     
 
    
@@ -225,11 +225,6 @@ private:
     cppflow::tensor action;
 
     ros::ServiceServer tf_service;
-
-    // vec normalize params
-    // int obs_len = 125; //48; // going to be like 137
-    // int obs_len = 149; // IROS deadline: 149= 72(robot state) + 73 (ref traj) + 4(contact state)
-    // int obs_len = 2310; 
 
     std::list<vector<float>> sensory_obs;
 
