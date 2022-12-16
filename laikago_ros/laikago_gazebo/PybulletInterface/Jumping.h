@@ -98,7 +98,9 @@ public:
     void getFullState(std::vector<double>& full_state);
 
     void landing();
+    void standing();
     void computeTorquesandSend_landing();
+    void computeTorquesandSend_standing();
 
     /************************** Tensorflow  ******************************/
     /**

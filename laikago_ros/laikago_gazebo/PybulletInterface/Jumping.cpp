@@ -172,6 +172,256 @@ void JumpingObj::getFullState(std::vector<double> &full_state)
     }
 }
 
+void JumpingObj::standing()
+{
+
+    std::cout << "QP activated" << std::endl;
+    double FR = 0;
+    double FL = 0;
+    double RR = 0;
+    double RL = 0; // contact state
+    double Kp_l = 5;
+    double Kd_l = 1;
+
+    // set desired joint position and velocity
+    _controlData->_legController->commands[0].qDes << 0, 1.2566 - 0.5, -2.355; // front right leg
+    _controlData->_legController->commands[1].qDes << _controlData->_legController->commands[0].qDes;
+    _controlData->_legController->commands[2].qDes << 0, 1.2566 - 0.5, -2.355; // rear right leg
+    _controlData->_legController->commands[3].qDes << _controlData->_legController->commands[2].qDes;
+
+    _controlData->_legController->commands[0].qdDes << 0, 0, 0; // front right leg
+    _controlData->_legController->commands[1].qdDes << _controlData->_legController->commands[0].qdDes;
+    _controlData->_legController->commands[2].qdDes << 0, 0, 0; // rear right leg
+    _controlData->_legController->commands[3].qdDes << _controlData->_legController->commands[2].qdDes;
+
+    for (int i = 0; i < 3; i++)
+    {
+        p_des[i] = 0;
+        v_des[i] = 0;
+        omegaDes[i] = 0;
+        rpy[i] = 0;
+    }
+
+    p_des[2] = 0.15; // standup height for A1
+
+    // Get contact state
+    FR = lowState.footForce[0];
+    FL = lowState.footForce[1];
+    RR = lowState.footForce[2];
+    RL = lowState.footForce[3];
+
+    std::cout << "actual_contactState: " << FR << "," << FL << "," << RR << "," << RL << std::endl;
+
+    if (FR > 0)
+    {
+        FR = 1;
+        _controlData->_legController->commands[0].kpJoint << Kp_l, 0, 0,
+            0, Kp_l, 0,
+            0, 0, Kp_l;
+        _controlData->_legController->commands[0].kdJoint << Kd_l, 0, 0,
+            0, Kd_l, 0,
+            0, 0, Kd_l;
+    }
+    else
+    {
+        FR = 0;
+    }
+
+    if (FL > 0)
+    {
+        FL = 1;
+        _controlData->_legController->commands[1].kpJoint << Kp_l, 0, 0,
+            0, Kp_l, 0,
+            0, 0, Kp_l;
+        _controlData->_legController->commands[1].kdJoint << Kd_l, 0, 0,
+            0, Kd_l, 0,
+            0, 0, Kd_l;
+    }
+    else
+    {
+        FL = 0;
+    }
+
+    if (RR > 0)
+    {
+        RR = 1;
+        _controlData->_legController->commands[2].kpJoint << Kp_l, 0, 0,
+            0, Kp_l, 0,
+            0, 0, Kp_l;
+        _controlData->_legController->commands[2].kdJoint << Kd_l, 0, 0,
+            0, Kd_l, 0,
+            0, 0, Kd_l;
+    }
+    else
+    {
+        RR = 0;
+    }
+
+    if (RL > 0)
+    {
+        RL = 1;
+        _controlData->_legController->commands[3].kpJoint << Kp_l, 0, 0,
+            0, Kp_l, 0,
+            0, 0, Kp_l;
+        _controlData->_legController->commands[3].kdJoint << Kd_l, 0, 0,
+            0, Kd_l, 0,
+            0, 0, Kd_l;
+    }
+    else
+    {
+        RL = 0;
+    }
+
+    // double contactStateScheduled[4]={FR,FL,RR,RL};
+    double contactStateScheduled[4] = {1, 1, 1, 1};
+    // std::cout << "set_contactState: " << contactStateScheduled[0] << "," << contactStateScheduled[1]<<"," << contactStateScheduled[2]<< "," << contactStateScheduled[3]<< std::endl;
+    runQP = true;
+
+    if (runQP)
+    {
+        //    _data->_stateEstimator->setContactPhase(contactphase);
+        auto &seResult = _controlData->_stateEstimator->getResult();
+
+        for (int i = 0; i < 4; i++)
+        {
+            se_xfb[i] = _controlData->_stateEstimator->getResult().orientation(i);
+        }
+
+        for (int i = 0; i < 3; i++)
+        {
+            p_act[i] = seResult.position(i);
+            v_act[i] = seResult.vBody(i);
+
+            se_xfb[4 + i] = seResult.position(i);
+            se_xfb[7 + i] = seResult.omegaBody(i);
+            se_xfb[10 + i] = seResult.vWorld(i);
+
+            // Set the translational and orientation gain
+
+            kpCOM[i] = 30;  //_data->controlParameters->kpCOM(i);
+            kdCOM[i] = 10;  //_data->controlParameters->kdCOM(i);
+            kpBase[i] = 80; //_data->controlParameters->kpBase(i);
+            kdBase[i] = 20; //  _data->controlParameters->kdBase(i);
+        }
+
+        kpCOM[2] = 50;
+        kdCOM[2] = 20;
+        kpBase[0] = 300;
+        // kdBase[0] = 5;
+        kpBase[1] = 200;
+
+        // Vec3<double> pFeetVec;
+        Vec3<double> pFeetVecCOM;
+
+        // Get the foot locations relative to COM
+        for (int leg = 0; leg < 4; leg++)
+        {
+            // computeLegJacobianAndPosition(&_data->_quadruped, _data->_legController->data[leg].q,
+            //                           (Mat3<double>*)nullptr, &pFeetVec, leg);
+            // pFeetVecCOM = _data->_stateEstimator->getResult().rBody.transpose() *
+            //(_data->_quadruped->getHipLocation(leg) + pFeetVec);
+
+            pFeetVecCOM = seResult.rBody.transpose() *
+                          (_controlData->_quadruped->getHipLocation(leg) + _controlData->_legController->data[leg].p);
+
+            pFeet[leg * 3] = pFeetVecCOM[0];
+            pFeet[leg * 3 + 1] = pFeetVecCOM[1];
+            pFeet[leg * 3 + 2] = pFeetVecCOM[2];
+            // std::cout << "pFeet" << leg << std::endl;
+        }
+
+        p_des[0] = p_act[0] + (pFeet[0] + pFeet[3] + pFeet[6] + pFeet[9]) / 4.0;
+        p_des[1] = p_act[1] + (pFeet[1] + pFeet[4] + pFeet[7] + pFeet[10]) / 4.0;
+        //  myfile << "\n";
+        // std::cout << j << std::endl;
+        // std::cout << "run QP" << std::endl;
+        balanceController.set_alpha_control(0.01);
+        balanceController.set_friction(0.2);
+        balanceController.set_mass(_controlData->_quadruped->mass);
+        balanceController.set_wrench_weights(COM_weights_stance, Base_weights_stance);
+        balanceController.set_PDgains(kpCOM, kdCOM, kpBase, kdBase);
+        balanceController.set_desiredTrajectoryData(rpy, p_des, omegaDes, v_des);
+        balanceController.SetContactData(contactStateScheduled, minForces, maxForces);
+        balanceController.updateProblemData(se_xfb, pFeet, p_des, p_act, v_des, v_act,
+                                            O_err, _controlData->_stateEstimator->getResult().rpy(2));
+        // balanceController.print_QPData();
+        double fOpt[12];
+        balanceController.solveQP_nonThreaded(fOpt);
+        // balanceController.get_b_matrix(b_control);
+        // b_des << b_control[2] << "\n";
+
+        // Publish the results over ROS
+        // balanceController.publish_data_lcm();
+
+        // Copy the results to the feed forward forces
+
+        //_data->_stateEstimator->run();
+
+        for (int leg = 0; leg < 4; leg++)
+        {
+            footFeedForwardForces.col(leg) << fOpt[leg * 3], fOpt[leg * 3 + 1],
+                fOpt[leg * 3 + 2]; // force in world frame, need to convert to body frame
+
+            _controlData->_legController->commands[leg].feedforwardForce = footFeedForwardForces.col(leg);
+            //_data->_stateEstimator->getResult().rBody.transpose() * footFeedForwardForces.col(leg);
+            // QP << _data->_legController->commands[leg].feedforwardForce[2] << " ";
+        }
+
+        // }
+
+        computeTorquesandSend_standing();
+
+        // cout<<"generated QP forces" << std::endl;
+    }
+}
+
+void JumpingObj::computeTorquesandSend_standing()
+{
+
+    for (int i = 0; i < 4; i++)
+    {
+        // computeLegJacobianAndPosition(_quadruped, data[i].q,&(data[i].J),&(data[i].p),i);
+        //  tauFF
+        // commands[i].tau = Vec3<double>::Zero();
+        Vec3<double> legTorque;
+        // std::cout << "legTorque" << legTorque << std::endl;
+        // forceFF
+
+        Vec3<double> footForce = _controlData->_legController->commands[i].feedforwardForce;
+
+        // footForce +=
+        //     commands[i].kpCartesian * (commands[i].pDes - data[i].p);
+
+        // footForce +=
+        //     commands[i].kdCartesian * (commands[i].vDes - data[i].v);
+        // std::cout << "leg: " << i << std::endl;
+        // std::cout << footForce << std::endl;
+        // torque
+        legTorque += _controlData->_legController->data[i].J.transpose() * footForce;
+        // std::cout << data[i].J << std::endl;
+        _controlData->_legController->commands[i].tau = legTorque;
+        for (int j = 0; j < 3; j++)
+        {
+            lowCmd.motorCmd[i * 3 + j].position = _controlData->_legController->commands[i].qDes[j];
+            lowCmd.motorCmd[i * 3 + j].velocity = _controlData->_legController->commands[i].qdDes[j];
+            lowCmd.motorCmd[i * 3 + j].torque = _controlData->_legController->commands[i].tau[j]; // legTorque[j];
+            lowCmd.motorCmd[i * 3 + j].positionStiffness = _controlData->_legController->commands[i].kpJoint(j, j);
+            lowCmd.motorCmd[i * 3 + j].velocityStiffness = _controlData->_legController->commands[i].kdJoint(j, j);
+            // std::cout<<"pos_des:" << lowCmd.motorCmd[i*3+j].position << std::endl;
+            // std::cout<<"vel_des:" << lowCmd.motorCmd[i*3+j].velocity << std::endl;
+            // std::cout<< "Kp:" <<lowCmd.motorCmd[i*3+j].positionStiffness << std::endl;
+            // std::cout<< "Kd:" <<lowCmd.motorCmd[i*3+j].velocityStiffness << std::endl;
+        }
+        // commands[i].tau << 0, 0, 0;
+        legTorque << 0, 0, 0;
+    }
+    sendServoCmd();
+    std::cout << "cmd sent" << std::endl;
+}
+
+
+
+
 void JumpingObj::landing()
 {
 
