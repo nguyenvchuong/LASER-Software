@@ -62,5 +62,20 @@ ax4.plot(t, RL, label='RL')
 ax4.legend()
 ax4.set_title("foot force")
 
+# QP force
+
+FR = state[:,][1100:2000,92]
+FL = state[:,][1100:2000,93]
+RR = state[:,][1100:2000,94]
+RL = state[:,][1100:2000,95]
+t1 = np.linspace(0,FR.shape[0],FR.shape[0])
+fig5, ax5 = plt.subplots()
+ax5.plot(t1, FR, label='FR')
+ax5.plot(t1, FL, label='FL') 
+ax5.plot(t1, RR, label='RR')  
+ax5.plot(t1, RL, label='RL') 
+ax5.legend()
+ax5.set_title("QP force")
+
 
 plt.show()

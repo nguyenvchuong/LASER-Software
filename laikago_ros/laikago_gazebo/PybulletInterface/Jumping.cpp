@@ -522,8 +522,8 @@ void JumpingObj::landing()
         RL = 0;
     }
 
-    // double contactStateScheduled[4]={FR,FL,RR,RL};
-    double contactStateScheduled[4] = {1, 1, 1, 1};
+    double contactStateScheduled[4]={FR,FL,RR,RL};
+    // double contactStateScheduled[4] = {1, 1, 1, 1};
     // std::cout << "set_contactState: " << contactStateScheduled[0] << "," << contactStateScheduled[1]<<"," << contactStateScheduled[2]<< "," << contactStateScheduled[3]<< std::endl;
     runQP = true;
 
