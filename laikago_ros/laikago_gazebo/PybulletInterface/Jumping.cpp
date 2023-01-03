@@ -422,7 +422,7 @@ void JumpingObj::computeTorquesandSend_standing()
 
 
 
-void JumpingObj::landing()
+void JumpingObj::landing(int counter)
 {
 
     std::cout << "QP activated" << std::endl;
@@ -430,19 +430,33 @@ void JumpingObj::landing()
     double FL = 0;
     double RR = 0;
     double RL = 0; // contact state
+    double Kp = 200;
+    double Kd = 2;
     double Kp_l = 5;
     double Kd_l = 1;
 
     // set desired joint position and velocity
-    _controlData->_legController->commands[0].qDes << 0, 1.2566 - 0.5, -2.355; // front right leg
+    _controlData->_legController->commands[0].qDes << 0, 1.2566 - 0.5, -2.355 + 0.4; // front right leg
     _controlData->_legController->commands[1].qDes << _controlData->_legController->commands[0].qDes;
-    _controlData->_legController->commands[2].qDes << 0, 1.2566 - 0.5, -2.355; // rear right leg
+    _controlData->_legController->commands[2].qDes << 0, 1.2566 - 0.5, -2.355 + 0.4; // rear right leg
     _controlData->_legController->commands[3].qDes << _controlData->_legController->commands[2].qDes;
 
     _controlData->_legController->commands[0].qdDes << 0, 0, 0; // front right leg
     _controlData->_legController->commands[1].qdDes << _controlData->_legController->commands[0].qdDes;
     _controlData->_legController->commands[2].qdDes << 0, 0, 0; // rear right leg
     _controlData->_legController->commands[3].qdDes << _controlData->_legController->commands[2].qdDes;
+
+    if (counter >= 1000 && counter <= 1100)
+    {
+        for (int i=0 ; i<4; i++){
+            _controlData->_legController->commands[i].kpJoint << Kp, 0, 0,
+                                                                 0, Kp, 0,
+                                                                 0, 0, Kp;
+            _controlData->_legController->commands[i].kdJoint << Kd, 0, 0,
+                                                                 0, Kd, 0,
+                                                                 0, 0, Kd;
+        }
+    }
 
     for (int i = 0; i < 3; i++)
     {
@@ -452,7 +466,7 @@ void JumpingObj::landing()
         rpy[i] = 0;
     }
 
-    p_des[2] = 0.2+0.2; // standup height for A1
+    p_des[2] = 0.2+0.1526; // standup height for A1
 
     // Get contact state
     FR = lowState.footForce[0];
@@ -461,6 +475,8 @@ void JumpingObj::landing()
     RL = lowState.footForce[3];
 
     std::cout << "actual_contactState: " << FR << "," << FL << "," << RR << "," << RL << std::endl;
+
+
 
     if (FR > 0)
     {
@@ -525,7 +541,12 @@ void JumpingObj::landing()
     double contactStateScheduled[4]={FR,FL,RR,RL};
     // double contactStateScheduled[4] = {1, 1, 1, 1};
     // std::cout << "set_contactState: " << contactStateScheduled[0] << "," << contactStateScheduled[1]<<"," << contactStateScheduled[2]<< "," << contactStateScheduled[3]<< std::endl;
-    runQP = true;
+    
+    if (counter > 1000){
+        runQP = true;
+
+    }
+
 
     if (runQP)
     {
@@ -1347,11 +1368,23 @@ void JumpingObj::computeFullTorquesAndSend_constraints()
 
     double Kt = 0.118; // 4/34
     double torque_motor_max = 4;
-    double max_js = 1700 * 2 * 3.14 / 60;
-    double min_js = 940 * 2 * 3.14 / 60;
+    double max_ms = 1700 * 2 * 3.14 / 60;
+    double min_ms = 940 * 2 * 3.14 / 60;
+    double _gear_ratio = 8.5;
+
+    double max_js = max_ms/ _gear_ratio;
+    double min_js = min_ms/ _gear_ratio;
+
+    double min_ts = 0.2 * _gear_ratio; // # min torque from plot
+    double max_ts = torque_motor_max * _gear_ratio; // # max torque from plot
+
+    // the parameters of green lines, converted to joint instead of motor
+    double alpha_joint = (min_js - max_js)/(max_ts - min_ts); 
+    double bj= min_js-alpha_joint * max_ts; 
+
     double _voltage_max = 21.5;
     double _current_max = 59.99;
-    double _gear_ratio = 8.5;
+    
     double _joint_vel_limit = 21;
     double _joint_torque_max = 33.5;
     double _R_motor = 25 * Kt * Kt;
@@ -1400,6 +1433,19 @@ void JumpingObj::computeFullTorquesAndSend_constraints()
         // }
 
     }
+ 
+
+    // Limit joint velocity via torque adjustment
+
+    // for (int i=0; i<4; i++){
+    //     for (int j=0; j<3; j++){
+    //         if(abs(_controlData->_legController->data[i].qd[j]) >= _joint_vel_limit*0.75)
+    //         {
+    //             _controlData->_legController->commands[i].tau[j] = (_controlData->_legController->data[i].qd[j]-bj)/alpha_joint;
+    //         }
+    //     }
+    // }
+
 
     // NOTE: Limit total current / upper power, voltage, lower power
 

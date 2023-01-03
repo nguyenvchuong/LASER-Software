@@ -329,7 +329,8 @@ int main(int argc, char **argv)
     // Chuong
 
     // string jump_trajectories[1] ={"src/LASER-Software/laikago_ros/jumping/data9_forward/jumpingFull_A1_1ms_h00_d60_full_state.csv"};
-    string jump_trajectories[1] ={"src/LASER-Software/laikago_ros/jumping/data10_forward/jumpingFull_A1_1ms_h20_d60_full_state.csv"};
+    // string jump_trajectories[1] ={"src/LASER-Software/laikago_ros/jumping/data10_forward/jumpingFull_A1_1ms_h20_d60_full_state.csv"};
+    string jump_trajectories[1] ={"src/LASER-Software/laikago_ros/jumping/data8_forward/jumpingFull_A1_1ms_h20_d60_full_state.csv"};
     double jump_zx_coordinates[2] = {0.2, 0.6};
     // string jump_trajectories[1] ={"src/LASER-Software/laikago_ros/jumping/data9_backflip/backflipFull_A1_1ms_h0_d-50_full_state.csv"};
     // double jump_zx_coordinates[2] = {0.0, -0.5};
@@ -350,7 +351,7 @@ int main(int argc, char **argv)
         // dimensions
         float dim_x = 0.8;
         float dim_y = 1;
-        float dim_z = jump_zx_coordinates[jump_traj_idx*2];
+        float dim_z = jump_zx_coordinates[jump_traj_idx*2]+0.01;
         // location 
         float x=jump_zx_coordinates[jump_traj_idx*2+1]+dim_x/2-0.2;
         float y=0;
@@ -482,7 +483,7 @@ int main(int argc, char **argv)
     int counter = 0;
     bool runQP = false;
     int flight_idx = 800;
-    int posing_time = 100;
+    int posing_time = 200;
 
     /*
 
@@ -602,7 +603,7 @@ int main(int argc, char **argv)
             }
             // cout << "pFeetW:" << pFeetW[0] << pFeetW[1] << pFeetW[2] << pFeetW[3] << std::endl;
 
-            if (counter % 20 == 0 && counter < 1000){
+            if (counter % 20 == 0 && counter <= 1000){
                 cout<<"time index:" << counter << std::endl;
                 // cout<<"FR:"<< FR<< "FL:" << FL<< "RR:"<< RR<< "RL:" << RL << std::endl;
                 jumping_obj.computeAction_2D(counter, init_final, contactState);
@@ -618,7 +619,7 @@ int main(int argc, char **argv)
 
             // switch to QP
             if(counter>= full_opt_N-posing_time && counter < full_opt_N+5000){
-                jumping_obj.landing();
+                jumping_obj.landing(counter);
             }
             
             // if (counter < jumping_obj.full_opt_N+1000){
