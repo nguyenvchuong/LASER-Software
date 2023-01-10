@@ -614,7 +614,8 @@ int main(int argc, char **argv)
                jumping_obj.setLegControllerCommandsFromTrajIndex_2D(counter);
 
             // // actually compute full torques and send
-               jumping_obj.computeFullTorquesAndSend_constraints();
+            //    jumping_obj.computeFullTorquesAndSend_constraints();
+               jumping_obj.computeFullTorquesAndSend();
             }
 
             // switch to QP
