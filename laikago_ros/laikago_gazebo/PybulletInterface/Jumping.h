@@ -153,7 +153,7 @@ public:
     bool runQP = false;
 
     int obs_len = 280;  // (28)*5 --> 2D
-    double act_arr[4]; 
+    double act_arr[4] = {0,0,0,0}; 
     int act_len = 4; //16
     double last_action_rl[4] = {0,0,0,0};
     
@@ -212,9 +212,10 @@ private:
 
     //2D
     // std::string tf_root = "src/LASER-Software/laikago_ros/jumping/112722214809/";
-    // std::string tf_root = "src/LASER-Software/laikago_ros/jumping/120122185909/"; // on box, h20z60. 
+    // std::string tf_root = "src/LASER-Software/laikago_ros/jumping/120122185909/"; // on box, h20z60.
     // std::string tf_root = "src/LASER-Software/laikago_ros/jumping/122922191604/"; // on box, h20z60, limit torque for qdots constraints 
-    std::string tf_root = "src/LASER-Software/laikago_ros/jumping/123022174925/"; // on box, ref without MDC, h20z60, limit torque for qdots constraints, 
+    // std::string tf_root = "src/LASER-Software/laikago_ros/jumping/123022174925/"; // on box, ref without MDC, h20z60, limit torque for qdots constraints, 
+    std::string tf_root = "src/LASER-Software/laikago_ros/jumping/010823214138/"; // on box h20z60, no MDC in both ref + learning
     // std::string tf_root = "src/LASER-Software/laikago_ros/jumping/121222230854/"; // ground
     
 
