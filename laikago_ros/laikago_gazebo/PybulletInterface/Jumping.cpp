@@ -1359,6 +1359,9 @@ void JumpingObj::computeFullTorquesAndSend()
             lowCmd.motorCmd[i * 3 + j].positionStiffness = _controlData->_legController->commands[i].kpJoint(j, j);
             lowCmd.motorCmd[i * 3 + j].velocityStiffness = _controlData->_legController->commands[i].kdJoint(j, j);
         }
+
+
+        
     }
     sendServoCmd();
 }
@@ -1599,22 +1602,38 @@ void JumpingObj::computeFullTorquesAndSend_constraints()
 
 
 
-void JumpingObj::computeFullTorquesAndSend_constraints_v2()
+void JumpingObj::computeFullTorquesAndSend_constraints_v2() // voltage only
 {
 
-    double Kt = 4 / 34;
+    double Kt = 0.118; // 4/34
     double torque_motor_max = 4;
-    double max_js = 1700 * 2 * 3.14 / 60;
-    double min_js = 940 * 2 * 3.14 / 60;
+    double max_ms = 1700 * 2 * 3.14 / 60;
+    double min_ms = 940 * 2 * 3.14 / 60;
+    double _gear_ratio = 8.5;
+
+    double max_js = max_ms/ _gear_ratio;
+    double min_js = min_ms/ _gear_ratio;
+
+    double min_ts = 0.2 * _gear_ratio; // # min torque from plot
+    double max_ts = torque_motor_max * _gear_ratio; // # max torque from plot
+
+    // the parameters of green lines, converted to joint instead of motor
+    double alpha_joint = (min_js - max_js)/(max_ts - min_ts); 
+    double bj= min_js-alpha_joint * max_ts; 
+
     double _voltage_max = 21.5;
     double _current_max = 59.99;
-    double _gear_ratio = 8.5;
+    
     double _joint_vel_limit = 21;
     double _joint_torque_max = 33.5;
-    double voltage[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // voltage for all joints
-    double tau_PD[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};  // torque PD for all joints
     double _R_motor = 25 * Kt * Kt;
+    double voltage[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // voltage for all joints
+    double current[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // current for all joints
     double total_current = 0;
+    double total_torque = 0;
+    double total_power = 0 ;
+    // cout << "max_js:" << max_js << std::endl;
+
 
     for (int i = 0; i < 4; i++)
     {
@@ -1636,27 +1655,48 @@ void JumpingObj::computeFullTorquesAndSend_constraints_v2()
         // torque
         tau_Cartesian = _controlData->_legController->data[i].J.transpose() * tau_Cartesian;
 
-        // Vec3<double>tau_PD =_controlData->_legController->commands[i].kpJoint *
-        //                      ( _controlData->_legController->commands[i].qDes - _controlData->_legController->data[i].q)
-        //                      + _controlData->_legController->commands[i].kdJoint *
-        //                      ( _controlData->_legController->commands[i].qdDes - _controlData->_legController->data[i].qd);
+        // Vec3<double> tau_PD = _controlData->_legController->commands[i].kpJoint *
+        //                           (_controlData->_legController->commands[i].qDes - _controlData->_legController->data[i].q) +
+        //                       _controlData->_legController->commands[i].kdJoint *
+        //                           (_controlData->_legController->commands[i].qdDes - _controlData->_legController->data[i].qd);
 
         // _controlData->_legController->commands[i].tau = legTorque + tau_Cartesian; //tau_ff + tau_Cartesian;
-        // NOTE: we want to limit voltage apply to robot's motor
 
         _controlData->_legController->commands[i].tau = tau_ff + tau_Cartesian; // full torque
 
-        for (int j = 0; j < 3; j++)
-        {
-            tau_PD[i * 3 + j] = _controlData->_legController->commands[i].kpJoint(j, j) *
-                                    (_controlData->_legController->commands[i].qDes[j] - _controlData->_legController->data[i].q[j]) +
-                                _controlData->_legController->commands[i].kdJoint(j, j) *
-                                    (_controlData->_legController->commands[i].qdDes[j] - _controlData->_legController->data[i].qd[j]);
-        }
+        // for (int j = 0; j<3; j++){
+        //     lowCmd.motorCmd[i*3+j].torque = _controlData->_legController->commands[i].tau(j);
+
+        //  //std::cout << "motor torque cmd: " << lowCmd.motorCmd[i*3+j].torque << std::endl;
+        //  //std::cout << commands[i].tau(j) << std::endl;
+        // }
+
+    }
+ 
+
+    // Limit joint velocity via torque adjustment
+
+    // for (int i=0; i<4; i++){
+    //     for (int j=0; j<3; j++){
+    //         if(abs(_controlData->_legController->data[i].qd[j]) >= _joint_vel_limit*0.75)
+    //         {
+    //             _controlData->_legController->commands[i].tau[j] = (_controlData->_legController->data[i].qd[j]-bj)/alpha_joint;
+    //         }
+    //     }
+    // }
+
+
+    // NOTE: Limit total current / upper power, voltage, lower power
+
+    // Compute voltage, limit voltage via limit torque
+
+    for (int i =0; i<4; i++){
 
         for (int j = 0; j < 3; j++)
         {
             voltage[i * 3 + j] = _controlData->_legController->commands[i].tau(j) * _R_motor / (Kt * _gear_ratio) + _controlData->_legController->data[i].qd[j] * _gear_ratio * Kt;
+            
+            // cout << "voltage:" << voltage[i * 3 + j] << std::endl;
             if (voltage[i * 3 + j] > _voltage_max)
             {
                 _controlData->_legController->commands[i].tau[j] = (_voltage_max - 1.0 * _controlData->_legController->data[i].qd[j] * _gear_ratio * Kt) * (Kt * _gear_ratio / _R_motor);
@@ -1667,56 +1707,28 @@ void JumpingObj::computeFullTorquesAndSend_constraints_v2()
             }
         }
 
-        // limit torque --> limit current run through motor (Unitree specs)
-        for (int j = 0; j < 3; j++)
-        {
-            if (_controlData->_legController->commands[i].tau[j] >= _joint_torque_max)
-            {
-                _controlData->_legController->commands[i].tau[j] = _joint_torque_max;
-            }
 
-            if (_controlData->_legController->commands[i].tau[j] <= -_joint_torque_max)
-            {
-                _controlData->_legController->commands[i].tau[j] = -_joint_torque_max;
-            }
-
-            total_current += _controlData->_legController->commands[i].tau[j]; // total torque
-        }
     }
 
-    total_current = total_current / (_gear_ratio * Kt); // total current
 
-    cout << "total current:" << total_current << std::endl;
-
-    if (total_current > _current_max || total_current < -1 * _current_max)
-    {
-        double K_c = abs(_current_max / total_current);
-        for (int i = 0; i < 4; i++)
-        {
-            for (int j = 0; j < 3; j++)
-            {
-                _controlData->_legController->commands[i].tau[j] = _controlData->_legController->commands[i].tau[j] * K_c;
-            }
-        }
-    }
-
-    // current = np.dot(np.ones(12), motor_torques) / (self._gear_ratio * Kt)
-    // if current >= self._current_max or current <= -self._current_max:
-    // motor_torques = motor_torques * np.abs((self._current_max) / current)
     for (int i = 0; i < 4; i++)
     {
-
+        Vec3<double> tau_PD = _controlData->_legController->commands[i].kpJoint *
+                            (_controlData->_legController->commands[i].qDes - _controlData->_legController->data[i].q) +
+                              _controlData->_legController->commands[i].kdJoint *
+                            (_controlData->_legController->commands[i].qdDes - _controlData->_legController->data[i].qd);
         // send torque to motor
         for (int j = 0; j < 3; j++)
         {
             lowCmd.motorCmd[i * 3 + j].position = _controlData->_legController->commands[i].qDes[j];
             lowCmd.motorCmd[i * 3 + j].velocity = _controlData->_legController->commands[i].qdDes[j];
-            lowCmd.motorCmd[i * 3 + j].torque = _controlData->_legController->commands[i].tau[j]; // legTorque[j];
-            lowCmd.motorCmd[i * 3 + j].positionStiffness = 0 * _controlData->_legController->commands[i].kpJoint(j, j);
-            lowCmd.motorCmd[i * 3 + j].velocityStiffness = 0 * _controlData->_legController->commands[i].kdJoint(j, j);
+            lowCmd.motorCmd[i * 3 + j].torque = _controlData->_legController->commands[i].tau[j] - 1 * tau_PD[j]; // legTorque[j];
+            lowCmd.motorCmd[i * 3 + j].positionStiffness = _controlData->_legController->commands[i].kpJoint(j, j);
+            lowCmd.motorCmd[i * 3 + j].velocityStiffness = _controlData->_legController->commands[i].kdJoint(j, j);
         }
     }
 
+    // Send command to motor servo
     sendServoCmd();
 }
 
