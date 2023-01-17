@@ -329,8 +329,8 @@ int main(int argc, char **argv)
     // Chuong
 
     // string jump_trajectories[1] ={"src/LASER-Software/laikago_ros/jumping/data9_forward/jumpingFull_A1_1ms_h00_d60_full_state.csv"};
+    // string jump_trajectories[1] ={"src/LASER-Software/laikago_ros/jumping/data10_forward/jumpingFull_A1_1ms_h20_d60_full_state.csv"};
     string jump_trajectories[1] ={"src/LASER-Software/laikago_ros/jumping/data10_forward/jumpingFull_A1_1ms_h20_d60_full_state.csv"};
-    // string jump_trajectories[1] ={"src/LASER-Software/laikago_ros/jumping/data8_forward/jumpingFull_A1_1ms_h20_d60_full_state.csv"};
     double jump_zx_coordinates[2] = {0.2, 0.6};
     // string jump_trajectories[1] ={"src/LASER-Software/laikago_ros/jumping/data9_backflip/backflipFull_A1_1ms_h0_d-50_full_state.csv"};
     // double jump_zx_coordinates[2] = {0.0, -0.5};
@@ -614,9 +614,8 @@ int main(int argc, char **argv)
                jumping_obj.setLegControllerCommandsFromTrajIndex_2D(counter);
 
             // // actually compute full torques and send
-            //    jumping_obj.computeFullTorquesAndSend_constraints();
-               jumping_obj.computeFullTorquesAndSend_constraints_v2();
-            //    jumping_obj.computeFullTorquesAndSend();
+               jumping_obj.computeFullTorquesAndSend_constraints_v1();
+            //    jumping_obj.computeFullTorquesAndSend_constraints_v2();
             }
 
             // switch to QP

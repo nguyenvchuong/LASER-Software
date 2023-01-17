@@ -1599,7 +1599,88 @@ void JumpingObj::computeFullTorquesAndSend_constraints()
 }
 
 
+void JumpingObj::computeFullTorquesAndSend_constraints_v1() // torque limits only, no MDC
+{
+    double _joint_vel_limit = 21;
+    double _joint_torque_max = 33.5;
 
+    for (int i = 0; i < 4; i++)
+    {
+
+        Vec3<double> legTorque = -1.0 * _controlData->_legController->commands[i].tau;
+        // std::cout << "commmand" << commands[i].tau << std::endl;
+        //  forceFF
+
+        Vec3<double> tau_ff = legTorque + _controlData->_legController->commands[i].kpJoint * (_controlData->_legController->commands[i].qDes - _controlData->_legController->data[i].q) + _controlData->_legController->commands[i].kdJoint * (_controlData->_legController->commands[i].qdDes - _controlData->_legController->data[i].qd);
+
+        // Jacobian already updated!
+        Vec3<double> tau_Cartesian(0, 0, 0);
+        tau_Cartesian +=
+            _controlData->_legController->commands[i].kpCartesian * (_controlData->_legController->commands[i].pDes - _controlData->_legController->data[i].p);
+
+        tau_Cartesian +=
+            _controlData->_legController->commands[i].kdCartesian * (_controlData->_legController->commands[i].vDes - _controlData->_legController->data[i].v);
+
+        // torque
+        tau_Cartesian = _controlData->_legController->data[i].J.transpose() * tau_Cartesian;
+
+        // Vec3<double> tau_PD = _controlData->_legController->commands[i].kpJoint *
+        //                           (_controlData->_legController->commands[i].qDes - _controlData->_legController->data[i].q) +
+        //                       _controlData->_legController->commands[i].kdJoint *
+        //                           (_controlData->_legController->commands[i].qdDes - _controlData->_legController->data[i].qd);
+
+        // _controlData->_legController->commands[i].tau = legTorque + tau_Cartesian; //tau_ff + tau_Cartesian;
+
+        _controlData->_legController->commands[i].tau = tau_ff + tau_Cartesian; // full torque
+
+        // for (int j = 0; j<3; j++){
+        //     lowCmd.motorCmd[i*3+j].torque = _controlData->_legController->commands[i].tau(j);
+
+        //  //std::cout << "motor torque cmd: " << lowCmd.motorCmd[i*3+j].torque << std::endl;
+        //  //std::cout << commands[i].tau(j) << std::endl;
+        // }
+
+    }
+
+    
+    // // limit torque --> limit current run through motor (Unitree specs)
+
+    for (int i = 0; i < 4; i++){
+        for (int j = 0; j < 3; j++)
+        {
+            if (_controlData->_legController->commands[i].tau[j] >= _joint_torque_max)
+            {
+                _controlData->_legController->commands[i].tau[j] = _joint_torque_max;
+            }
+
+            if (_controlData->_legController->commands[i].tau[j] <= -_joint_torque_max)
+            {
+                _controlData->_legController->commands[i].tau[j] = -_joint_torque_max;
+            }
+        }
+    }
+
+
+    for (int i = 0; i < 4; i++)
+    {
+        Vec3<double> tau_PD = _controlData->_legController->commands[i].kpJoint *
+                            (_controlData->_legController->commands[i].qDes - _controlData->_legController->data[i].q) +
+                              _controlData->_legController->commands[i].kdJoint *
+                            (_controlData->_legController->commands[i].qdDes - _controlData->_legController->data[i].qd);
+        // send torque to motor
+        for (int j = 0; j < 3; j++)
+        {
+            lowCmd.motorCmd[i * 3 + j].position = _controlData->_legController->commands[i].qDes[j];
+            lowCmd.motorCmd[i * 3 + j].velocity = _controlData->_legController->commands[i].qdDes[j];
+            lowCmd.motorCmd[i * 3 + j].torque = _controlData->_legController->commands[i].tau[j] - 1 * tau_PD[j]; // legTorque[j];
+            lowCmd.motorCmd[i * 3 + j].positionStiffness = _controlData->_legController->commands[i].kpJoint(j, j);
+            lowCmd.motorCmd[i * 3 + j].velocityStiffness = _controlData->_legController->commands[i].kdJoint(j, j);
+        }
+    }
+
+    // Send command to motor servo
+    sendServoCmd();
+}
 
 
 void JumpingObj::computeFullTorquesAndSend_constraints_v2() // voltage only
