@@ -430,33 +430,33 @@ void JumpingObj::landing(int counter)
     double FL = 0;
     double RR = 0;
     double RL = 0; // contact state
-    double Kp = 200;
+    double Kp = 100;
     double Kd = 2;
-    double Kp_l = 5;
+    double Kp_l = 2;
     double Kd_l = 1;
 
     // set desired joint position and velocity
-    _controlData->_legController->commands[0].qDes << 0, 1.2566 - 0.5, -2.355 + 0.4; // front right leg
-    _controlData->_legController->commands[1].qDes << _controlData->_legController->commands[0].qDes;
-    _controlData->_legController->commands[2].qDes << 0, 1.2566 - 0.5, -2.355 + 0.4; // rear right leg
-    _controlData->_legController->commands[3].qDes << _controlData->_legController->commands[2].qDes;
+    // _controlData->_legController->commands[0].qDes << 0, 1.2566 - 0.8*0, -2.355; // front right leg
+    // _controlData->_legController->commands[1].qDes << _controlData->_legController->commands[0].qDes;
+    // _controlData->_legController->commands[2].qDes << 0, 1.2566 - 0.8*0, -2.355; // rear right leg
+    // _controlData->_legController->commands[3].qDes << _controlData->_legController->commands[2].qDes;
 
     _controlData->_legController->commands[0].qdDes << 0, 0, 0; // front right leg
     _controlData->_legController->commands[1].qdDes << _controlData->_legController->commands[0].qdDes;
     _controlData->_legController->commands[2].qdDes << 0, 0, 0; // rear right leg
     _controlData->_legController->commands[3].qdDes << _controlData->_legController->commands[2].qdDes;
 
-    if (counter >= 1000 && counter <= 1100)
-    {
-        for (int i=0 ; i<4; i++){
-            _controlData->_legController->commands[i].kpJoint << Kp, 0, 0,
-                                                                 0, Kp, 0,
-                                                                 0, 0, Kp;
-            _controlData->_legController->commands[i].kdJoint << Kd, 0, 0,
-                                                                 0, Kd, 0,
-                                                                 0, 0, Kd;
-        }
-    }
+    // if (counter >= 1000 && counter <= 1100)
+    // {
+    //     for (int i=0 ; i<4; i++){
+    //         _controlData->_legController->commands[i].kpJoint << Kp, 0, 0,
+    //                                                              0, Kp, 0,
+    //                                                              0, 0, Kp;
+    //         _controlData->_legController->commands[i].kdJoint << Kd, 0, 0,
+    //                                                              0, Kd, 0,
+    //                                                              0, 0, Kd;
+    //     }
+    // }
 
     for (int i = 0; i < 3; i++)
     {
@@ -538,8 +538,8 @@ void JumpingObj::landing(int counter)
         RL = 0;
     }
 
-    double contactStateScheduled[4]={FR,FL,RR,RL};
-    // double contactStateScheduled[4] = {1, 1, 1, 1};
+    // double contactStateScheduled[4]={FR,FL,RR,RL};
+    double contactStateScheduled[4] = {1, 1, 1, 1};
     // std::cout << "set_contactState: " << contactStateScheduled[0] << "," << contactStateScheduled[1]<<"," << contactStateScheduled[2]<< "," << contactStateScheduled[3]<< std::endl;
     
     if (counter > 1000){
@@ -579,7 +579,7 @@ void JumpingObj::landing(int counter)
         kdCOM[2] = 20;
         kpBase[0] = 300;
         // kdBase[0] = 5;
-        kpBase[1] = 200;
+        kpBase[1] = 150;
 
         // Vec3<double> pFeetVec;
         Vec3<double> pFeetVecCOM;
@@ -1453,39 +1453,39 @@ void JumpingObj::computeFullTorquesAndSend_constraints()
     // NOTE: Limit total current / upper power, voltage, lower power
 
     // Limit total current consumed by all motors (Unitree specs)
-    for (int i=0; i<4; i++){
-        for (int j = 0; j < 3; j++)
-        {
-            if (_controlData->_legController->commands[i].tau[j] >= _joint_torque_max)
-            {
-                _controlData->_legController->commands[i].tau[j] = _joint_torque_max;
-            }
+    // for (int i=0; i<4; i++){
+    //     for (int j = 0; j < 3; j++)
+    //     {
+    //         if (_controlData->_legController->commands[i].tau[j] >= _joint_torque_max)
+    //         {
+    //             _controlData->_legController->commands[i].tau[j] = _joint_torque_max;
+    //         }
 
-            if (_controlData->_legController->commands[i].tau[j] <= -_joint_torque_max)
-            {
-                _controlData->_legController->commands[i].tau[j] = -_joint_torque_max;
-            }
+    //         if (_controlData->_legController->commands[i].tau[j] <= -_joint_torque_max)
+    //         {
+    //             _controlData->_legController->commands[i].tau[j] = -_joint_torque_max;
+    //         }
 
-            total_torque += _controlData->_legController->commands[i].tau[j]; // total torque
-        }
-    }
+    //         total_torque += _controlData->_legController->commands[i].tau[j]; // total torque
+    //     }
+    // }
 
-    // cout << "total torque:" << total_torque << std::endl;
-    total_current = total_torque/(_gear_ratio*Kt); // total current
+    // // cout << "total torque:" << total_torque << std::endl;
+    // total_current = total_torque/(_gear_ratio*Kt); // total current
 
-    // cout << "total current:" << total_current << std::endl;
+    // // cout << "total current:" << total_current << std::endl;
 
-    if (total_current > _current_max || total_current < -1 * _current_max)
-    {
-            double K_c = abs(_current_max / total_current);
-            for (int i = 0; i < 4; i++)
-            {
-                for (int j = 0; j < 3; j++)
-                {
-                    _controlData->_legController->commands[i].tau[j] = _controlData->_legController->commands[i].tau[j] * K_c;
-                }
-            }
-    }
+    // if (total_current > _current_max || total_current < -1 * _current_max)
+    // {
+    //         double K_c = abs(_current_max / total_current);
+    //         for (int i = 0; i < 4; i++)
+    //         {
+    //             for (int j = 0; j < 3; j++)
+    //             {
+    //                 _controlData->_legController->commands[i].tau[j] = _controlData->_legController->commands[i].tau[j] * K_c;
+    //             }
+    //         }
+    // }
 
     // Compute voltage, limit voltage via limit torque
 
@@ -1561,20 +1561,20 @@ void JumpingObj::computeFullTorquesAndSend_constraints()
     
     // // limit torque --> limit current run through motor (Unitree specs)
 
-    // for (int i = 0; i < 4; i++){
-    //     for (int j = 0; j < 3; j++)
-    //     {
-    //         if (_controlData->_legController->commands[i].tau[j] >= _joint_torque_max)
-    //         {
-    //             _controlData->_legController->commands[i].tau[j] = _joint_torque_max;
-    //         }
+    for (int i = 0; i < 4; i++){
+        for (int j = 0; j < 3; j++)
+        {
+            if (_controlData->_legController->commands[i].tau[j] >= _joint_torque_max)
+            {
+                _controlData->_legController->commands[i].tau[j] = _joint_torque_max;
+            }
 
-    //         if (_controlData->_legController->commands[i].tau[j] <= -_joint_torque_max)
-    //         {
-    //             _controlData->_legController->commands[i].tau[j] = -_joint_torque_max;
-    //         }
-    //     }
-    // }
+            if (_controlData->_legController->commands[i].tau[j] <= -_joint_torque_max)
+            {
+                _controlData->_legController->commands[i].tau[j] = -_joint_torque_max;
+            }
+        }
+    }
 
 
     for (int i = 0; i < 4; i++)

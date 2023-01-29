@@ -1,0 +1,16 @@
+        kpCOM[2] = 50;
+        kdCOM[2] = 20;
+        kpBase[0] = 300;
+        // kdBase[0] = 5;
+        kpBase[1] = 200;
+
+   double Kp = 100;
+    double Kd = 2;
+    double Kp_l = 5;
+    double Kd_l = 1;
+
+p_des[2] = 0.2+0.1826; // standup height for A1
+
+
+
+

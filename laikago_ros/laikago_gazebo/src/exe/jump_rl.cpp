@@ -330,7 +330,7 @@ int main(int argc, char **argv)
 
     // string jump_trajectories[1] ={"src/LASER-Software/laikago_ros/jumping/data9_forward/jumpingFull_A1_1ms_h00_d60_full_state.csv"};
     // string jump_trajectories[1] ={"src/LASER-Software/laikago_ros/jumping/data10_forward/jumpingFull_A1_1ms_h20_d60_full_state.csv"};
-    string jump_trajectories[1] ={"src/LASER-Software/laikago_ros/jumping/data10_forward/jumpingFull_A1_1ms_h20_d60_full_state.csv"};
+    string jump_trajectories[1] ={"src/LASER-Software/laikago_ros/jumping/data11_forward/jumpingFull_A1_1ms_h20_d60_full_state.csv"};
     double jump_zx_coordinates[2] = {0.2, 0.6};
     // string jump_trajectories[1] ={"src/LASER-Software/laikago_ros/jumping/data9_backflip/backflipFull_A1_1ms_h0_d-50_full_state.csv"};
     // double jump_zx_coordinates[2] = {0.0, -0.5};
@@ -351,7 +351,7 @@ int main(int argc, char **argv)
         // dimensions
         float dim_x = 0.8;
         float dim_y = 1;
-        float dim_z = jump_zx_coordinates[jump_traj_idx*2]+0.01;
+        float dim_z = jump_zx_coordinates[jump_traj_idx*2];
         // location 
         float x=jump_zx_coordinates[jump_traj_idx*2+1]+dim_x/2-0.2;
         float y=0;
@@ -614,7 +614,7 @@ int main(int argc, char **argv)
                jumping_obj.setLegControllerCommandsFromTrajIndex_2D(counter);
 
             // // actually compute full torques and send
-               jumping_obj.computeFullTorquesAndSend_constraints_v1();
+               jumping_obj.computeFullTorquesAndSend_constraints();
             //    jumping_obj.computeFullTorquesAndSend_constraints_v2();
             }
 
