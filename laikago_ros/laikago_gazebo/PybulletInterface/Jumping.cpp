@@ -430,14 +430,14 @@ void JumpingObj::landing(int counter)
     double FL = 0;
     double RR = 0;
     double RL = 0; // contact state
-    double Kp = 100;
-    double Kd = 2;
+    // double Kp = 100;
+    // double Kd = 2;
     double Kp_l = 2;
     double Kd_l = 1;
 
     // set desired joint position and velocity
-    // _controlData->_legController->commands[0].qDes << 0, 1.2566 - 0.8*0, -2.355; // front right leg
-    // _controlData->_legController->commands[1].qDes << _controlData->_legController->commands[0].qDes;
+    _controlData->_legController->commands[0].qDes << 0, 1.2566 - 0.8*1, -2.355; // front right leg
+    _controlData->_legController->commands[1].qDes << _controlData->_legController->commands[0].qDes;
     // _controlData->_legController->commands[2].qDes << 0, 1.2566 - 0.8*0, -2.355; // rear right leg
     // _controlData->_legController->commands[3].qDes << _controlData->_legController->commands[2].qDes;
 
@@ -702,15 +702,14 @@ void JumpingObj::computeTorquesandSend_landing()
 void JumpingObj::get2DObservation_hist(int Iter, std::vector<double> init_final, std::vector<double> contactState) // Remove torque+ Add initial final config
 
 {
-    vector<float> curr_obs(28);
+    vector<float> curr_obs(27);
     auto &seResult = _controlData->_stateEstimator->getResult();
 
     // add initial CoM position and perturbation to observation
-    curr_obs[0] = init_final[0];
-    curr_obs[1] = init_final[2];
-    curr_obs[2] = init_final[12];
-    curr_obs[3] = init_final[13];
-    int idx = 4;
+    curr_obs[0] = init_final[0]; // x
+    curr_obs[1] = init_final[2]; // z
+    curr_obs[2] = init_final[4]; // pitch
+    int idx = 3;
 
     for (int i = 0; i < 2; i++)
         curr_obs[i + idx] = lowState.motorState[i + 1].position;
@@ -1157,19 +1156,19 @@ void JumpingObj::setLegControllerCommandsFromTrajIndex_2D(int trajIdx)
         0, 10, 0,
         0, 0, 10;
 
-    kpJoint << 500, 0, 0,
-        0, 500, 0,
-        0, 0, 500; // 100
-    kdJoint << 5, 0, 0,
-        0, 5, 0,
-        0, 0, 5;
+    // kpJoint << 500, 0, 0,
+    //     0, 500, 0,
+    //     0, 0, 500; // 100
+    // kdJoint << 5, 0, 0,
+    //     0, 5, 0,
+    //     0, 0, 5;
 
-    // kpJoint << 300, 0, 0,
-    //             0, 300, 0,
-    //             0, 0, 300; //100
-    // kdJoint<<   3, 0, 0,
-    //             0, 3, 0,
-    //             0, 0, 3;
+    kpJoint << 300, 0, 0,
+                0, 300, 0,
+                0, 0, 300; //100
+    kdJoint<<   3, 0, 0,
+                0, 3, 0,
+                0, 0, 3;
 
     auto des_state = x_opt[trajIdx];
     for (int leg = 0; leg < 4; leg++)

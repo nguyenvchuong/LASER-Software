@@ -153,7 +153,7 @@ public:
     // landing:
     bool runQP = false;
 
-    int obs_len = 280;  // (28)*5 --> 2D
+    int obs_len = 270;  // (28)*5 --> 2D
     double act_arr[4] = {0,0,0,0}; 
     int act_len = 4; //16
     double last_action_rl[4] = {0,0,0,0};
@@ -214,16 +214,7 @@ private:
     //2D
     // std::string tf_root = "src/LASER-Software/laikago_ros/jumping/112722214809/";
     // std::string tf_root = "src/LASER-Software/laikago_ros/jumping/120122185909/"; // on box, h20z60.
-    std::string tf_root = "src/LASER-Software/laikago_ros/jumping/012023121318/"; // use data11_forward, on box, h20z60.
-
-    // std::string tf_root = "src/LASER-Software/laikago_ros/jumping/011823155742/"; // use data12_forward, on box, h20z60.
-    // std::string tf_root = "src/LASER-Software/laikago_ros/jumping/011623103115/"; // data_10 reference h20z60, no MDC in learning
-    // std::string tf_root = "src/LASER-Software/laikago_ros/jumping/122922191604/"; // on box, h20z60, limit torque for qdots constraints 
-    // std::string tf_root = "src/LASER-Software/laikago_ros/jumping/123022174925/"; // on box, ref without MDC, h20z60, limit torque for qdots constraints, 
-    // std::string tf_root = "src/LASER-Software/laikago_ros/jumping/010823214138/"; // on box h20z60, no MDC in both ref + learning
-    // std::string tf_root = "src/LASER-Software/laikago_ros/jumping/120122183552/"; // on box h20z60, MDC on voltage only in learning
-
-    // std::string tf_root = "src/LASER-Software/laikago_ros/jumping/121222230854/"; // ground
+    std::string tf_root = "src/LASER-Software/laikago_ros/jumping/012623125238/"; // use data11_forward, on box, h20z60.
     
 
    
