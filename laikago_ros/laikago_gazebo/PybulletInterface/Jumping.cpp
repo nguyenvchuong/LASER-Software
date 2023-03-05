@@ -1389,7 +1389,8 @@ void JumpingObj::computeFullTorquesAndSend_constraints()
     
     double _joint_vel_limit = 21;
     double _joint_torque_max = 33.5;
-    double _R_motor = 25 * Kt * Kt;
+    // double _R_motor = 25 * Kt * Kt;
+    double _R_motor = 0.638;
     double voltage[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // voltage for all joints
     double current[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // current for all joints
     double total_current = 0;
@@ -1598,7 +1599,7 @@ void JumpingObj::computeFullTorquesAndSend_constraints()
 }
 
 
-void JumpingObj::computeFullTorquesAndSend_constraints_v1() // torque limits only, no MDC
+void JumpingObj::computeFullTorquesAndSend_constraints_v2() // torque limits only
 {
     double _joint_vel_limit = 21;
     double _joint_torque_max = 33.5;
@@ -1682,7 +1683,7 @@ void JumpingObj::computeFullTorquesAndSend_constraints_v1() // torque limits onl
 }
 
 
-void JumpingObj::computeFullTorquesAndSend_constraints_v2() // voltage only
+void JumpingObj::computeFullTorquesAndSend_constraints_v1() // voltage only
 {
 
     double Kt = 0.118; // 4/34
@@ -1706,7 +1707,8 @@ void JumpingObj::computeFullTorquesAndSend_constraints_v2() // voltage only
     
     double _joint_vel_limit = 21;
     double _joint_torque_max = 33.5;
-    double _R_motor = 25 * Kt * Kt;
+    // double _R_motor = 25 * Kt * Kt;
+    double _R_motor = 0.638;
     double voltage[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // voltage for all joints
     double current[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // current for all joints
     double total_current = 0;
@@ -1789,6 +1791,24 @@ void JumpingObj::computeFullTorquesAndSend_constraints_v2() // voltage only
 
 
     }
+
+    // limit torque --> limit current run through motor (Unitree specs)
+
+    for (int i = 0; i < 4; i++){
+        for (int j = 0; j < 3; j++)
+        {
+            if (_controlData->_legController->commands[i].tau[j] >= _joint_torque_max)
+            {
+                _controlData->_legController->commands[i].tau[j] = _joint_torque_max;
+            }
+
+            if (_controlData->_legController->commands[i].tau[j] <= -_joint_torque_max)
+            {
+                _controlData->_legController->commands[i].tau[j] = -_joint_torque_max;
+            }
+        }
+    }
+
 
 
     for (int i = 0; i < 4; i++)
