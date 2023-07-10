@@ -4,22 +4,6 @@ Software package for LASER (Legged-Agile-Smart-Efficient-Robot) Series
 
 Details in /laikago_ros, software guide and user manual provided by Unitree in /documentation
 
-## Notes on pybullet interface
-Tested on Ubuntu 18.04 (and 20.04). Built ROS melodic with python3 target. To run the MPC interface, source ROS in 3 terminals, and in order:
-
-  * launch aliengo robot (no vis, see GUI flag in launch file, but gazebo will not be updated)  
-  `roslaunch laikago_gazebo aliengo.launch`
-  * Run the MPC service:  
-  `rosrun laikago_gazebo pyb_mpc`  
-  * Activate virtualenv and run (from usc_learning/ros_interface)  
-  `python run_mpc.py`
-
-Another option to visualize the communication from ROS to pybullet:  
-
-  `rosrun laikago_gazebo laikago_pyb_send_state`  
-  `python example_vis_ros_state.py`
-
-
 ## RL functionalities
 
 Currently depends on [Tensorflow 1.15.0](https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-1.15.0.tar.gz) for loading networks trained in Pybullet with rllib. 
@@ -51,6 +35,7 @@ sudo apt-get install ros-melodic-controller-manager ros-melodic-ros-control ros-
   Servo.cpp is the executable file that contains FSM_State object
 
 ## Build Instructions
+  * delete build and devel folder
   * source your ROS
   * build laikago_msgs package first
   `catkin_make --pkg laikago_msgs`
