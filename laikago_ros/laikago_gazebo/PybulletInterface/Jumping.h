@@ -216,9 +216,11 @@ private:
     // std::string tf_root = "src/LASER-Software/laikago_ros/jumping/120122185909/"; // on box, h20z60.
     // std::string tf_root = "src/LASER-Software/laikago_ros/jumping/012623125238/"; // use data11_forward, on box, h20z60.
     // std::string tf_root = "src/LASER-Software/laikago_ros/jumping/012723162729/"; // use data11_forward, on box, h20z60.
-        std::string tf_root = "src/LASER-Software/laikago_ros/jumping/012723162729/"; // use data10_forward, on box, h20z60.
-
+    // std::string tf_root = "src/LASER-Software/laikago_ros/jumping/012723162729/"; // use data10_forward, on box, h20z60.
+    // std::string tf_root = "src/LASER-Software/laikago_ros/jumping/012623125238/"; // use data10_forward, on box, h20z60.
    
+
+   std::string tf_root = "src/LASER-Software/laikago_ros/jumping/070423170652/"; // use data14_forward, on box, h20z60.
     bool normalize_obs_flag = true;
 
     // Model model;

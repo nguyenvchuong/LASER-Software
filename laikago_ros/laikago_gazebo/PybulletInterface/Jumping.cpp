@@ -1389,8 +1389,8 @@ void JumpingObj::computeFullTorquesAndSend_constraints()
     
     double _joint_vel_limit = 21;
     double _joint_torque_max = 33.5;
-    // double _R_motor = 25 * Kt * Kt;
-    double _R_motor = 0.638;
+    double _R_motor = 25 * Kt * Kt;
+    // double _R_motor = 0.638;
     double voltage[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // voltage for all joints
     double current[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // current for all joints
     double total_current = 0;
@@ -2104,7 +2104,7 @@ void JumpingObj::computeAction_2D(int Iter, std::vector<double> init_final, std:
         }
     }
 
-    if (Iter > 900)
+    if (Iter > 800)
     { // flight idx+100
         for (int j = 0; j < 4; j++)
         {

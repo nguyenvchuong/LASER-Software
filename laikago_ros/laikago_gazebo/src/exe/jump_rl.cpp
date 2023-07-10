@@ -329,7 +329,7 @@ int main(int argc, char **argv)
     // Chuong
 
     // string jump_trajectories[1] ={"src/LASER-Software/laikago_ros/jumping/data9_forward/jumpingFull_A1_1ms_h00_d60_full_state.csv"};
-    string jump_trajectories[1] ={"src/LASER-Software/laikago_ros/jumping/data10_forward/jumpingFull_A1_1ms_h20_d60_full_state.csv"};
+    string jump_trajectories[1] ={"src/LASER-Software/laikago_ros/jumping/data14_forward/jumpingFull_A1_1ms_h20_d60_full_state.csv"};
     // string jump_trajectories[1] ={"src/LASER-Software/laikago_ros/jumping/data11_forward/jumpingFull_A1_1ms_h20_d60_full_state.csv"};
     double jump_zx_coordinates[2] = {0.2, 0.6};
     // string jump_trajectories[1] ={"src/LASER-Software/laikago_ros/jumping/data9_backflip/backflipFull_A1_1ms_h0_d-50_full_state.csv"};
@@ -603,7 +603,8 @@ int main(int argc, char **argv)
             }
             // cout << "pFeetW:" << pFeetW[0] << pFeetW[1] << pFeetW[2] << pFeetW[3] << std::endl;
 
-            if (counter % 20 == 0 && counter <= 1000){
+            // if (counter % 20 == 0 && counter <= 1000){
+            if (counter % 20 == 0 && counter <= flight_idx+20){
                 cout<<"time index:" << counter << std::endl;
                 // cout<<"FR:"<< FR<< "FL:" << FL<< "RR:"<< RR<< "RL:" << RL << std::endl;
                 jumping_obj.computeAction_2D(counter, init_final, contactState);
@@ -615,7 +616,8 @@ int main(int argc, char **argv)
 
             // // actually compute full torques and send
             //    jumping_obj.computeFullTorquesAndSend_constraints();
-               jumping_obj.computeFullTorquesAndSend_constraints_v1();
+            //    jumping_obj.computeFullTorquesAndSend_constraints_v1();
+               jumping_obj.computeFullTorquesAndSend_constraints();
             }
 
             // switch to QP
