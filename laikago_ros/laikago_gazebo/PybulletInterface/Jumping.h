@@ -220,7 +220,9 @@ private:
     // std::string tf_root = "src/LASER-Software/laikago_ros/jumping/012623125238/"; // use data10_forward, on box, h20z60.
    
 
-    std::string tf_root = "src/LASER-Software/laikago_ros/jumping/070423170652/"; // use data14_forward, on box, h20z60.
+    std::string tf_root = "src/LASER-Software/laikago_ros/jumping/070623221405/"; // use data15_forward, on box, h20z60. no constraint in learning
+    // std::string tf_root = "src/LASER-Software/laikago_ros/jumping/070523224525/"; // use data15_forward, on box, h20z60. MDC in learning
+        // std::string tf_root = "src/LASER-Software/laikago_ros/jumping/070323135426/"; // use data15_forward, on box, h20z60. all constraints in learning
     bool normalize_obs_flag = true;
 
     // Model model;
